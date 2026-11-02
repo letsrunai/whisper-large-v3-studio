@@ -2,8 +2,6 @@
 
 Drop an audio or video file, get timestamped text and subtitles (`.srt`, `.vtt`). Runs [openai/whisper-large-v3](https://huggingface.co/openai/whisper-large-v3) on your own machine; nothing is uploaded anywhere.
 
-[![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/letsrunai/whisper-large-v3-studio/blob/main/colab.ipynb)
-
 | | |
 |---|---|
 | **Model** | Whisper large-v3 (1.55B parameters) |
@@ -14,27 +12,31 @@ Drop an audio or video file, get timestamped text and subtitles (`.srt`, `.vtt`)
 | **Closed alternative** | OpenAI's hosted transcription API, billed per minute of audio |
 | **License** | Model: Apache-2.0 · Code: MIT |
 
-## Quick start
+## Three ways to run it
+
+### 1. On your own machine
 
 You need [uv](https://docs.astral.sh/uv/), [ffmpeg](https://ffmpeg.org/) and [Node.js](https://nodejs.org/) 20 or newer.
 
 ```bash
 git clone https://github.com/letsrunai/whisper-large-v3-studio
 cd whisper-large-v3-studio
-npm --prefix web install
-npm --prefix web run build
-uv run whisper-studio
+npm run setup
+npm start
 ```
 
-Open http://127.0.0.1:7860 and drop a file. The first run downloads the model weights (about 3 GB) into the Hugging Face cache.
+Open http://127.0.0.1:7860 and drop a file. The page plays your file next to the transcript: click any line to hear it from there. The first run downloads the model weights (about 3 GB) into the Hugging Face cache.
 
-The page plays your file next to the transcript: click any line to hear it from there.
+### 2. No GPU? On Colab
 
-No GPU? The Colab notebook runs the same server on Colab's GPU with a lighter page that needs no build.
+[![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/letsrunai/whisper-large-v3-studio/blob/main/colab/whisper-large-v3-studio.ipynb)
 
-## From the terminal
+The notebook runs the same server on Colab's GPU with a lighter page. See [colab/](colab/).
+
+### 3. From the terminal
 
 ```bash
+cd server
 uv run whisper-studio transcribe talk.mp3 --srt talk.srt
 uv run whisper-studio transcribe interview.m4a --language tr
 uv run whisper-studio transcribe podcast.mp3 --translate
@@ -42,9 +44,24 @@ uv run whisper-studio transcribe podcast.mp3 --translate
 
 It prints the text, then the backend, the time it took, the speed against real time and the peak memory. The numbers in the table above come from this command.
 
-## How it runs
+## What is where
 
-The app picks the fastest way to run the same large-v3 weights on your machine:
+```
+whisper-large-v3-studio/
+├── server/   Python: runs the model, serves /api/transcribe and the page, whisper-studio command
+├── web/      Next.js: the page you use on your own machine
+└── colab/    the notebook for running it on Colab's GPU
+```
+
+| Part | Stack |
+|---|---|
+| [server/](server/) | Python 3.10+, FastAPI, Uvicorn; mlx-whisper on Apple Silicon, faster-whisper on NVIDIA and CPU |
+| [web/](web/) | Next.js (static export), React, TypeScript, Tailwind CSS, ESLint, Prettier |
+| [colab/](colab/) | Jupyter notebook; installs `server/` and opens its lite page |
+
+## How it runs the model
+
+The server picks the fastest way to run the same large-v3 weights on your machine:
 
 | Machine | Backend | Weights |
 |---|---|---|
@@ -52,37 +69,11 @@ The app picks the fastest way to run the same large-v3 weights on your machine:
 | NVIDIA GPU | [faster-whisper](https://github.com/SYSTRAN/faster-whisper), float16 | [Systran/faster-whisper-large-v3](https://huggingface.co/Systran/faster-whisper-large-v3) |
 | CPU only | faster-whisper, int8 | same as above |
 
-Choose one by hand with `--backend` before the command, or with the `WHISPER_BACKEND` environment variable:
-
-```bash
-uv run whisper-studio --backend faster-whisper serve --port 8000
-```
-
-## Tech stack
-
-- Server: Python 3.10+, [FastAPI](https://fastapi.tiangolo.com/) and Uvicorn
-- Model: mlx-whisper on Apple Silicon, faster-whisper everywhere else
-- Page: [Next.js](https://nextjs.org/) (static export), React, TypeScript, Tailwind CSS, ESLint and Prettier
-
-```
-src/whisper_studio/
-├── engine.py      picks the backend and runs the model
-├── subtitles.py   .srt and .vtt
-├── server.py      /api/transcribe, and the page from web/out
-├── __main__.py    whisper-studio serve | transcribe
-└── static/        a single-file page for installs without the web build (Colab)
-web/
-├── src/app/       the page
-├── src/components/ drop zone, options, transcript and player
-└── src/lib/       the API client
-```
-
 ## Development
 
 ```bash
-npm --prefix web run dev     # server on :7860 and the page on http://localhost:7861, with hot reload
-npm --prefix web run check   # TypeScript, ESLint, Prettier
-uv run pytest                # the server; the model is replaced with a stand-in
+npm run dev     # server on :7860 and the page on http://localhost:7861, with hot reload
+npm run check   # web: TypeScript, ESLint, Prettier · server: pytest
 ```
 
 ## License

@@ -1,0 +1,13 @@
+{
+  "name": "whisper-large-v3-studio",
+  "private": true,
+  "description": "Run commands from the repository root; the parts live in server/, web/ and colab/.",
+  "scripts": {
+    "setup": "uv --directory server sync && npm --prefix web install && npm --prefix web run build",
+    "start": "uv --directory server run whisper-studio",
+    "dev": "npm --prefix web run dev",
+    "build": "npm --prefix web run build",
+    "test": "uv --directory server run pytest",
+    "check": "npm --prefix web run check && uv --directory server run pytest -q"
+  }
+}

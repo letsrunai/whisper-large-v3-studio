@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "concurrently -k -n api,web -c green,blue \"uv --directory .. run whisper-studio serve\" \"next dev -p 7861\"",
+    "dev": "concurrently -k -n api,web -c green,blue \"uv --directory ../server run whisper-studio serve\" \"next dev -p 7861\"",
     "dev:web": "next dev -p 7861",
     "build": "next build",
     "lint": "eslint",

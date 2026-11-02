@@ -23,10 +23,10 @@ class FakeEngine:
         )
 
 
-def test_without_a_web_build_the_single_file_page_is_served():
+def test_without_a_web_build_the_lite_page_is_served():
     client = TestClient(create_app(FakeEngine(), web_build=None))
     assert "Whisper large-v3 Studio" in client.get("/").text
-    assert client.get("/static/app.js").status_code == 200
+    assert client.get("/lite/app.js").status_code == 200
 
 
 def test_a_web_build_is_served_next_to_the_api(tmp_path: Path):

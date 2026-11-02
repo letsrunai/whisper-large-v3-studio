@@ -1,7 +1,7 @@
 """The web app: the page and one endpoint that turns an uploaded file into text and subtitles.
 
-The page is the Next.js app in web/ once `npm run build` has written web/out. Without that build,
-as in a pip install on Colab, the single-file page in static/ is served instead.
+The page is the Next.js app in web/ once it is built into web/out. Without that build, as in a
+pip install on Colab, the lite page next to this file is served instead.
 """
 
 from __future__ import annotations
@@ -22,8 +22,9 @@ from fastapi.staticfiles import StaticFiles
 from .engine import LazyEngine
 from .subtitles import to_srt, to_vtt
 
-STATIC = Path(__file__).parent / "static"
-WEB_BUILD = Path(os.environ.get("WHISPER_STUDIO_WEB", Path(__file__).parents[2] / "web" / "out"))
+LITE = Path(__file__).parent / "lite"
+# server/src/whisper_studio/server.py → the repository root is three folders up.
+WEB_BUILD = Path(os.environ.get("WHISPER_STUDIO_WEB", Path(__file__).parents[3] / "web" / "out"))
 # `npm run dev` serves the Next.js app on port 7861 and calls this server directly.
 DEV_ORIGINS = ["http://localhost:7861", "http://127.0.0.1:7861"]
 
@@ -64,7 +65,7 @@ def create_app(engine: LazyEngine | None = None, web_build: Path | None = WEB_BU
 
         @app.get("/")
         def index() -> FileResponse:
-            return FileResponse(STATIC / "index.html")
+            return FileResponse(LITE / "index.html")
 
-        app.mount("/static", StaticFiles(directory=STATIC), name="static")
+        app.mount("/lite", StaticFiles(directory=LITE), name="lite")
     return app
