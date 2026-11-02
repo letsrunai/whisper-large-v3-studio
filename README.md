@@ -16,17 +16,21 @@ Drop an audio or video file, get timestamped text and subtitles (`.srt`, `.vtt`)
 
 ## Quick start
 
-You need [uv](https://docs.astral.sh/uv/) and [ffmpeg](https://ffmpeg.org/).
+You need [uv](https://docs.astral.sh/uv/), [ffmpeg](https://ffmpeg.org/) and [Node.js](https://nodejs.org/) 20 or newer.
 
 ```bash
 git clone https://github.com/letsrunai/whisper-large-v3-studio
 cd whisper-large-v3-studio
+npm --prefix web install
+npm --prefix web run build
 uv run whisper-studio
 ```
 
 Open http://127.0.0.1:7860 and drop a file. The first run downloads the model weights (about 3 GB) into the Hugging Face cache.
 
-No GPU? The Colab notebook runs the same app on Colab's GPU.
+The page plays your file next to the transcript: click any line to hear it from there.
+
+No GPU? The Colab notebook runs the same server on Colab's GPU with a lighter page that needs no build.
 
 ## From the terminal
 
@@ -56,26 +60,30 @@ uv run whisper-studio --backend faster-whisper serve --port 8000
 
 ## Tech stack
 
-- Python 3.10+, [FastAPI](https://fastapi.tiangolo.com/) and Uvicorn
-- mlx-whisper on Apple Silicon, faster-whisper everywhere else
-- One page of HTML, CSS and JavaScript; no build step
+- Server: Python 3.10+, [FastAPI](https://fastapi.tiangolo.com/) and Uvicorn
+- Model: mlx-whisper on Apple Silicon, faster-whisper everywhere else
+- Page: [Next.js](https://nextjs.org/) (static export), React, TypeScript, Tailwind CSS, ESLint and Prettier
 
 ```
 src/whisper_studio/
 ├── engine.py      picks the backend and runs the model
 ├── subtitles.py   .srt and .vtt
-├── server.py      the web app and /api/transcribe
+├── server.py      /api/transcribe, and the page from web/out
 ├── __main__.py    whisper-studio serve | transcribe
-└── static/        the page
+└── static/        a single-file page for installs without the web build (Colab)
+web/
+├── src/app/       the page
+├── src/components/ drop zone, options, transcript and player
+└── src/lib/       the API client
 ```
 
 ## Development
 
 ```bash
-uv run pytest
+npm --prefix web run dev     # server on :7860 and the page on http://localhost:7861, with hot reload
+npm --prefix web run check   # TypeScript, ESLint, Prettier
+uv run pytest                # the server; the model is replaced with a stand-in
 ```
-
-The tests replace the model with a stand-in, so they run in a second without a GPU.
 
 ## License
 

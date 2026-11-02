@@ -1,7 +1,12 @@
-"""The web app: one page, one endpoint that turns an uploaded file into text and subtitles."""
+"""The web app: the page and one endpoint that turns an uploaded file into text and subtitles.
+
+The page is the Next.js app in web/ once `npm run build` has written web/out. Without that build,
+as in a pip install on Colab, the single-file page in static/ is served instead.
+"""
 
 from __future__ import annotations
 
+import os
 import shutil
 import tempfile
 from dataclasses import asdict
@@ -10,6 +15,7 @@ from typing import Literal
 
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.concurrency import run_in_threadpool
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
@@ -17,15 +23,15 @@ from .engine import LazyEngine
 from .subtitles import to_srt, to_vtt
 
 STATIC = Path(__file__).parent / "static"
+WEB_BUILD = Path(os.environ.get("WHISPER_STUDIO_WEB", Path(__file__).parents[2] / "web" / "out"))
+# `npm run dev` serves the Next.js app on port 7861 and calls this server directly.
+DEV_ORIGINS = ["http://localhost:7861", "http://127.0.0.1:7861"]
 
 
-def create_app(engine: LazyEngine | None = None) -> FastAPI:
+def create_app(engine: LazyEngine | None = None, web_build: Path | None = WEB_BUILD) -> FastAPI:
     app = FastAPI(title="Whisper large-v3 Studio")
     whisper = engine or LazyEngine()
-
-    @app.get("/")
-    def index() -> FileResponse:
-        return FileResponse(STATIC / "index.html")
+    app.add_middleware(CORSMiddleware, allow_origins=DEV_ORIGINS, allow_methods=["POST"])
 
     @app.post("/api/transcribe")
     async def transcribe(
@@ -52,5 +58,13 @@ def create_app(engine: LazyEngine | None = None) -> FastAPI:
             "vtt": to_vtt(result.segments),
         }
 
-    app.mount("/static", StaticFiles(directory=STATIC), name="static")
+    if web_build and (web_build / "index.html").is_file():
+        app.mount("/", StaticFiles(directory=web_build, html=True), name="web")
+    else:
+
+        @app.get("/")
+        def index() -> FileResponse:
+            return FileResponse(STATIC / "index.html")
+
+        app.mount("/static", StaticFiles(directory=STATIC), name="static")
     return app
