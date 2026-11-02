@@ -6,8 +6,12 @@ No GPU on your machine? This notebook runs [Whisper large-v3 Studio](../README.m
 
 1. Open it with the badge.
 2. **Runtime → Change runtime type → T4 GPU** (any GPU works).
-3. Run the cells from top to bottom.
+3. Run the cells from top to bottom: install, upload a file, transcribe, download the `.srt`.
 
-It installs [server/](../server/) and opens its lite page inside Colab. The Next.js page in [web/](../web/) is for running on your own machine, where the build step is one command.
+The transcribe cell prints the text, the time it took, the speed against real time and the peak GPU memory.
 
-The last cell transcribes a file you upload and prints the time it took and the peak GPU memory.
+It installs a tagged release of [server/](../server/), so the notebook keeps working while `main` changes.
+
+## The web app on Colab
+
+The last section opens the lite web page inside Colab. Colab's free tier does not allow working mainly through a web UI and may end such sessions ([Colab FAQ](https://research.google.com/colaboratory/faq.html)), so that section is only for runtimes paid with compute units. On the free tier, use the cells. The full Next.js page in [web/](../web/) is for running on your own machine.

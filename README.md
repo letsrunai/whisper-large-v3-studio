@@ -31,7 +31,7 @@ Open http://127.0.0.1:7860 and drop a file. The page plays your file next to the
 
 [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/letsrunai/whisper-large-v3-studio/blob/main/colab/whisper-large-v3-studio.ipynb)
 
-The notebook runs the same server on Colab's GPU with a lighter page. See [colab/](colab/).
+Upload a file, run the cells, download the subtitles. It runs the same model code on Colab's GPU from notebook cells, as the free tier expects; the web app there is optional and needs compute units. See [colab/](colab/).
 
 ### 3. From the terminal
 
@@ -57,7 +57,7 @@ whisper-large-v3-studio/
 |---|---|
 | [server/](server/) | Python 3.10+, FastAPI, Uvicorn; mlx-whisper on Apple Silicon, faster-whisper on NVIDIA and CPU |
 | [web/](web/) | Next.js (static export), React, TypeScript, Tailwind CSS, ESLint, Prettier |
-| [colab/](colab/) | Jupyter notebook; installs `server/` and opens its lite page |
+| [colab/](colab/) | Jupyter notebook; installs a tagged release of `server/` and transcribes from cells |
 
 ## How it runs the model
 
